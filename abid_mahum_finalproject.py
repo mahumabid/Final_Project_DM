@@ -1,20 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# #  Final Project - Data Mining
-
-# # Using KNN, SVM, RF and LSTM To Predict Diabetes
-
-# ## Goal
-
-# "My project aims to implement a variety of machine learning classification algorithms, along with a deep learning model, to predict the likelihood of a patient having diabetes. This prediction is based on specific diagnostic measurements provided in the dataset."
-
-# 
-# ### Importing the packages and libraries that are required for the project
-
-# In[79]:
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -39,22 +22,11 @@ from keras.layers import Dense
 from keras.layers import LSTM
 
 
-# ###  Loading Data And Preprocessing
-
-# In[80]:
-
-
+###  Loading Data And Preprocessing
 diab = pd.read_csv('diabetes.csv')
 diab.describe()
 
-
-# In[81]:
-
-
 diab.info()
-
-
-# In[82]:
 
 
 def impute_missing_values(dataframe):
@@ -69,17 +41,10 @@ def impute_missing_values(dataframe):
 # Assuming 'diab' is your DataFrame
 diab = impute_missing_values(diab)
 
-
-# In[83]:
-
-
 diab.head()
 
 
 # ### Separating The Dataset into Features and Output label
-
-# In[84]:
-
 
 # Feature and label separation
 features = diab.iloc[:, :-1]
@@ -87,15 +52,6 @@ labels = diab.iloc[:, -1]
 
 
 # ### Data Visualization 
-
-# In the dataset, an observable data imbalance exists in the target label, where the number of patients without diabetes is twice the number of patients with diabetes.
-# 
-# Now, we have two potential approaches: one involves addressing the data imbalance in the train dataset that we will generate, while the other entails employing stratified sampling in the train-test split. Additionally, we will use stratified k-fold cross-validation to maintain a similar label ratio in both the training and testing sets.
-# 
-# For this project, we will adopt the strategy of stratified sampling and apply stratified k-fold cross-validation.
-
-# In[85]:
-
 
 # Visualizing the distribution of the target variable
 sns.countplot(labels, label="Count")
@@ -112,64 +68,17 @@ print('Number of Negative Outcomes : ', negative_outcomes)
 print('Percentage of Negative Outcomes: {}%'.format(round((negative_outcomes / total_samples) * 100, 2)))
 print('\n')
 
-
-# ### Checking for Correlation between attributes
-
-# In[86]:
-
-
 # Creating a correlation matrix and displaying it using a heatmap
 fig, axis = plt.subplots(figsize=(8, 8))
 correlation_matrix = features.corr()
 sns.heatmap(correlation_matrix, annot=True, linewidths=.5, fmt='.2f', ax=axis)
 plt.show()
-
-
-# Upon examination, the most notable and heighest correlation is observed in two pairs:
-# 
-#     The correlation between 'Age' and 'Pregnancies' is 0.54.
-# 
-#     The correlation between 'BMI' and 'SkinThickness' is 0.54.
-# 
-# Notably, the attributes do not exhibit high correlation with each other. As a result, we can confidently utilize this set of attributes for our project.
-
-# 
-# ### Visualize the distribution of values for each attribute by plotting histograms.
-
-# In[87]:
-
-
 features.hist(figsize=(10, 10))
 plt.show()
-
-
-# Following are the observations made from the above plot:
-# 
-#     The distributions of 'Glucose' and 'BloodPressure' exhibit a degree of symmetry.
-# 
-# In contrast, the distributions of the remaining attributes are skewed towards one side.
-# 
-# 
-# 
-# 
-# 
-# 
-
-# 
-# ### Generate a pairplot to visualize multiple pairwise bivariate distributions within our dataset.
-
-# In[88]:
-
 
 # Creating a pair plot with a hue based on the 'Outcome' column
 sns.pairplot(diab, hue='Outcome')
 plt.show()
-
-
-# ### Train Test Data Split
-
-# In[89]:
-
 
 # Perform train-test split with a 10% test size and stratification
 features_train_all, features_test_all, labels_train_all, labels_test_all = train_test_split(features, labels, test_size=0.1, random_state=21, stratify=labels)
@@ -179,14 +88,6 @@ for dataset in [features_train_all, features_test_all, labels_train_all, labels_
     dataset.reset_index(drop=True, inplace=True)
 
 
-# ### Normalize the training dataset to enhance model performance.
-
-# Normalize the training dataset to enhance model performance.
-# 
-# The normalization process involves subtracting the mean from each value and then dividing by the standard deviation. This results in normalized attributes with a mean of 0 and a standard deviation of 1.
-
-# In[90]:
-
 
 # Standardize features for training set
 features_train_all_std = (features_train_all - features_train_all.mean()) / features_train_all.std()
@@ -194,20 +95,7 @@ features_train_all_std = (features_train_all - features_train_all.mean()) / feat
 # Standardize features for testing set
 features_test_all_std = (features_test_all - features_test_all.mean()) / features_test_all.std()
 
-
-# In[91]:
-
-
 features_train_all_std.describe()
-
-
-# 
-# As observed in the table above, the mean of each attribute is approximately 0, and the standard deviation is 1.
-
-# ### Define the necessary function for model fitting and metric calculation.
-
-# In[92]:
-
 
 def calc_metrics(confusion_matrix):
     TP, FN = confusion_matrix[0][0], confusion_matrix[0][1]
@@ -227,9 +115,6 @@ def calc_metrics(confusion_matrix):
 
     metrics = [TP, TN, FP, FN, TPR, TNR, FPR, FNR, Precision, F1_measure, Accuracy, Error_rate, BACC, TSS, HSS]
     return metrics
-
-
-# In[93]:
 
 
 def get_metrics(model, X_train, X_test, y_train, y_test, LSTM_flag):
@@ -284,28 +169,6 @@ def get_metrics(model, X_train, X_test, y_train, y_test, LSTM_flag):
 
     return metrics
 
-
-# In[107]:
-
-
-metrics
-
-
-# ## Selecting Classification Algorithms
-# ### I have decided to select following Classification algorithms
-#         1.K-Nearest Neighbor
-# 
-#         2.Random Forest
-# 
-#         3.Support Vector Machine
-# ### For Deep learning algorithm, I have decided to use LSTM
-# Long Short-Term Memory
-# 
-# ## Parameter Tuning for KNN
-
-# In[94]:
-
-
 # Define KNN parameters for grid search
 knn_parameters = {"n_neighbors": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
 
@@ -320,18 +183,8 @@ knn_cv.fit(features_train_all_std, labels_train_all)
 print("\nBest Parameters for KNN based on GridSearchCV: ", knn_cv.best_params_)
 print('\n')
 
-
-# In[95]:
-
-
 # Extract the best value for 'n_neighbors' from the grid search results
 best_n_neighbors = knn_cv.best_params_['n_neighbors']
-
-
-# ### RF Parameter Tuning 
-
-# In[96]:
-
 
 # Define Random Forest parameters for grid search
 param_grid_rf = {
@@ -355,14 +208,6 @@ print('\n')
 min_samples_split = best_rf_params['min_samples_split']
 n_estimators = best_rf_params['n_estimators']
 
-
-# ### SVM Parameter Tuning
-
-#   Here, I am using 'linear' kernel for SVC for this project
-
-# In[97]:
-
-
 # Define Support Vector Machine parameters for grid search
 param_grid_svc = {"kernel": ["linear"], "C": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
 
@@ -381,19 +226,8 @@ print('\n')
 # Extract the best value for 'C'
 C_value = best_svc_params['C']
 
-
-# ### Comparing the classifiers with selected parameters by using 10-Fold Stratified Cross-Validation to calculate all metrics
-# #### Implementing 10-Fold Stratified Cross-Validation
-# In this project, I will be using the training data set for validation as well using Startefied 10-Fold Cross Validation
-
-# In[98]:
-
-
 # Define Stratified K-Fold cross-validator
 cv_stratified = StratifiedKFold(n_splits=10, shuffle=True, random_state=21)
-
-
-# In[99]:
 
 
 # Initialize metric columns
@@ -447,10 +281,6 @@ for iter_num, (train_index, test_index) in enumerate(cv_stratified.split(feature
     print(metrics_all_df.round(decimals=2).T)
     print('\n')
 
-
-# In[100]:
-
-
 # Initialize metric index for each iteration
 metric_index_df = ['iter1', 'iter2', 'iter3', 'iter4', 'iter5', 'iter6', 'iter7', 'iter8', 'iter9', 'iter10']
 
@@ -466,10 +296,6 @@ for i, metrics_df in enumerate([knn_metrics_df, rf_metrics_df, svm_metrics_df, l
     print(metrics_df.round(decimals=2).T)
     print('\n')
 
-
-# In[101]:
-
-
 # Calculate the average metrics for each algorithm
 knn_avg_df = knn_metrics_df.mean()
 rf_avg_df = rf_metrics_df.mean()
@@ -482,13 +308,6 @@ avg_performance_df = pd.DataFrame({'KNN': knn_avg_df, 'RF': rf_avg_df, 'SVM': sv
 # Display the average performance for each algorithm
 print(avg_performance_df.round(decimals=2))
 print('\n')
-
-
-# ### Evaluating the performance of various algorithms by comparing their ROC curves and AUC scores on the test dataset.
-
-# In[102]:
-
-
 
 # KNN Model
 knn_model = KNeighborsClassifier(n_neighbors=best_n_neighbors)
@@ -513,11 +332,6 @@ plt.title('KNN ROC Curve')
 plt.legend(loc='lower right')
 plt.show()
 
-
-# In[103]:
-
-
-
 # Random Forest Model
 rf_model = RandomForestClassifier(min_samples_split=min_samples_split, n_estimators=n_estimators)
 rf_model.fit(features_train_all_std, labels_train_all)
@@ -541,10 +355,6 @@ plt.title("Random Forest ROC Curve")
 plt.legend(loc="lower right")
 plt.show()
 
-
-# In[104]:
-
-
 # SVM Classifier Model
 svm_model = SVC(C=C, kernel='linear', probability=True)
 svm_model.fit(features_train_all_std, labels_train_all)
@@ -567,10 +377,6 @@ plt.ylabel("True Positive Rate")
 plt.title("SVM ROC Curve")
 plt.legend(loc="lower right")
 plt.show()
-
-
-# In[105]:
-
 
 # LSTM model
 lstm_model = Sequential()
@@ -614,264 +420,5 @@ plt.title("LSTM ROC Curve")
 plt.legend(loc="lower right")
 plt.show()
 
-
-# ### Comparing All Models
-
-# In[106]:
-
-
 print(avg_performance_df.round(decimals=2))
 print('\n')
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
